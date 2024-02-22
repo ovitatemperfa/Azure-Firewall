@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "virtualMachines_Srv_Work_name": {
-            "defaultValue": "Srv-Work",
+            "defaultValue": "Srv-Workx",
             "type": "String"
         },
         "publicIPAddresses_fw_pip_name": {
