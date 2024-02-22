@@ -21,19 +21,13 @@
         "networkInterfaces_srv_work873_name": {
             "defaultValue": "srv-work873",
             "type": "String"
-        },
-        "adminUsername": {
-            "type": "securestring"
-        },
-        "adminPassword": {
-            "type": "securestring"
         }
     },
     "variables": {},
     "resources": [
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[parameters('publicIPAddresses_fw_pip_name')]",
             "location": "eastus",
             "sku": {
@@ -41,16 +35,19 @@
                 "tier": "Regional"
             },
             "properties": {
-                "ipAddress": "20.232.204.23",
+                "ipAddress": "52.234.148.151",
                 "publicIPAddressVersion": "IPv4",
                 "publicIPAllocationMethod": "Static",
                 "idleTimeoutInMinutes": 4,
-                "ipTags": []
+                "ipTags": [],
+                "ddosSettings": {
+                    "protectionMode": "VirtualNetworkInherited"
+                }
             }
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[parameters('virtualNetworks_Test_FW_VN_name')]",
             "location": "eastus",
             "properties": {
@@ -112,7 +109,8 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Premium_LRS",
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_Srv_Work_name'), '_disk1_39602f2aa4cb400c804a723842c4e20f'))]"
                         },
                         "deleteOption": "Delete",
                         "diskSizeGB": 127
@@ -122,8 +120,7 @@
                 },
                 "osProfile": {
                     "computerName": "[parameters('virtualMachines_Srv_Work_name')]",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
+                    "adminUsername": "dy",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true,
@@ -135,7 +132,8 @@
                         "enableVMAgentPlatformUpdates": false
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -152,7 +150,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[parameters('networkInterfaces_srv_work873_name')]",
             "location": "eastus",
             "dependsOn": [
@@ -164,7 +162,7 @@
                     {
                         "name": "ipconfig1",
                         "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_srv_work873_name')), '/ipConfigurations/ipconfig1')]",
-                        "etag": "W/\"efe32a91-afeb-4889-9975-0f2f62e4e459\"",
+                        "etag": "W/\"cae5d655-dd96-42fd-84fc-7b58704843c5\"",
                         "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
                         "properties": {
                             "provisioningState": "Succeeded",
@@ -184,12 +182,14 @@
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "disableTcpStateTracking": false,
-                "nicType": "Standard"
+                "nicType": "Standard",
+                "auxiliaryMode": "None",
+                "auxiliarySku": "None"
             }
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[concat(parameters('virtualNetworks_Test_FW_VN_name'), '/AzureFirewallSubnet')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_Test_FW_VN_name'))]"
@@ -203,7 +203,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[concat(parameters('virtualNetworks_Test_FW_VN_name'), '/Workload-SN')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_Test_FW_VN_name'))]"
@@ -217,7 +217,7 @@
         },
         {
             "type": "Microsoft.Network/azureFirewalls",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2023-06-01",
             "name": "[parameters('azureFirewalls_Test_FW_RG_name')]",
             "location": "eastus",
             "dependsOn": [
@@ -245,8 +245,74 @@
                         }
                     }
                 ],
-                "networkRuleCollections": [],
-                "applicationRuleCollections": [],
+                "networkRuleCollections": [
+                    {
+                        "name": "Net-Coll01",
+                        "id": "[concat(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewalls_Test_FW_RG_name')), '/networkRuleCollections/Net-Coll01')]",
+                        "properties": {
+                            "priority": 200,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "Allow-DNS",
+                                    "protocols": [
+                                        "UDP"
+                                    ],
+                                    "sourceAddresses": [
+                                        "10.0.2.0/24"
+                                    ],
+                                    "destinationAddresses": [
+                                        "209.244.0.3",
+                                        "209.244.0.4"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "53"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "applicationRuleCollections": [
+                    {
+                        "name": "App-Coll01",
+                        "id": "[concat(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewalls_Test_FW_RG_name')), '/applicationRuleCollections/App-Coll01')]",
+                        "properties": {
+                            "priority": 200,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "Allow-Google",
+                                    "protocols": [
+                                        {
+                                            "protocolType": "Http",
+                                            "port": 80
+                                        },
+                                        {
+                                            "protocolType": "Https",
+                                            "port": 443
+                                        }
+                                    ],
+                                    "fqdnTags": [],
+                                    "targetFqdns": [
+                                        "www.google.com"
+                                    ],
+                                    "sourceAddresses": [
+                                        "10.0.2.0/24"
+                                    ],
+                                    "sourceIpGroups": []
+                                }
+                            ]
+                        }
+                    }
+                ],
                 "natRuleCollections": []
             }
         }
