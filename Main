@@ -245,8 +245,74 @@
                         }
                     }
                 ],
-                "networkRuleCollections": [],
-                "applicationRuleCollections": [],
+                "networkRuleCollections": [
+                    {
+                        "name": "Net-Coll01",
+                        "id": "[concat(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewalls_Test_FW_RG_name')), '/networkRuleCollections/Net-Coll01')]",
+                        "properties": {
+                            "priority": 200,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "Allow-DNS",
+                                    "protocols": [
+                                        "UDP"
+                                    ],
+                                    "sourceAddresses": [
+                                        "10.0.2.0/24"
+                                    ],
+                                    "destinationAddresses": [
+                                        "209.244.0.3",
+                                        "209.244.0.4"
+                                    ],
+                                    "sourceIpGroups": [],
+                                    "destinationIpGroups": [],
+                                    "destinationFqdns": [],
+                                    "destinationPorts": [
+                                        "53"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "applicationRuleCollections": [
+                    {
+                        "name": "App-Coll01",
+                        "id": "[concat(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewalls_Test_FW_RG_name')), '/applicationRuleCollections/App-Coll01')]",
+                        "properties": {
+                            "priority": 200,
+                            "action": {
+                                "type": "Allow"
+                            },
+                            "rules": [
+                                {
+                                    "name": "Allow-Google",
+                                    "protocols": [
+                                        {
+                                            "protocolType": "Http",
+                                            "port": 80
+                                        },
+                                        {
+                                            "protocolType": "Https",
+                                            "port": 443
+                                        }
+                                    ],
+                                    "fqdnTags": [],
+                                    "targetFqdns": [
+                                        "www.google.com"
+                                    ],
+                                    "sourceAddresses": [
+                                        "10.0.2.0/24"
+                                    ],
+                                    "sourceIpGroups": []
+                                }
+                            ]
+                        }
+                    }
+                ],
                 "natRuleCollections": []
             }
         }
