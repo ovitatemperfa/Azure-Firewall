@@ -13,3 +13,5 @@ Please note, when you run this deployment and are asked to create a username and
 If you have any questions feel free to reach out via my user page. If you have any suggestions or additions, I'd also love to hear from anyone for collaboration.
 
 Thanks!
+
+Note: this deployment was last successfully deployed on 3/12/2024. If you have any issues with this Template Spec deployment, please reach out and let me know.
