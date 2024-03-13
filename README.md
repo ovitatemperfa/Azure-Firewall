@@ -2,7 +2,7 @@ Hi!
 
 Welcome to this ReadMe.
 
-The purpose of this code is to enable automatic deployment of an Azure IoT Hub. This demo was built using the following Azure documentation:
+The purpose of this code is to enable automatic deployment of an Azure Firewall, complete with DNAT, NAT and Application rules and the required disks, NSGs, route tables. This demo was built using the following Azure documentation:
 
 https://learn.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
 
